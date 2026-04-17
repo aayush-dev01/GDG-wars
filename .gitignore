@@ -55,8 +55,12 @@ build/
 ehthumbs.db
 Thumbs.db
 
-# Misc
-*.log
-run-logs/
-tmp/
-temp/
+# Deployment Configs (Unused)
+render.yaml
+vercel.json
+backend/railway.toml
+backend/Procfile
+cloud-deploy.sh
+START_COMMANDS.txt
+*.cmd
+start.sh
