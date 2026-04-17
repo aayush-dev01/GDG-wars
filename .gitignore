@@ -1,0 +1,22 @@
+# Python
+backend/venv/
+backend/.venv_clean/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/.env
+backend/legalease.db
+backend/generated_reports/
+backend/uploaded_documents/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+venv/
+run-logs/
