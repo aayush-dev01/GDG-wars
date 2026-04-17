@@ -16,6 +16,7 @@ from services.pdf_service import generate_pdf
 from services.storage_service import save_report
 from services.workspace_service import ensure_workspace_seeded
 from services.email_service import send_report_email
+from services.gcs_service import upload_to_gcs
 
 logger = logging.getLogger(__name__)
 
@@ -198,6 +199,8 @@ async def analyze(req: AnalyzeRequest, request: Request):
     pdf_path = os.path.join(GENERATED_REPORTS_DIR, f"{report_id}.pdf")
     try:
         generate_pdf(full_data, pdf_path)
+        # Optional: Upload to GCS if configured
+        upload_to_gcs(pdf_path, f"reports/{report_id}.pdf")
     except Exception as e:
         logger.warning(f"PDF generation warning: {e}")
         full_data["pdf_url"] = None

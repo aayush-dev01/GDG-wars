@@ -4895,6 +4895,8 @@ export default function App() {
       <style>{css}</style>
       <PointerGlow />
       <motion.nav
+        role="navigation"
+        aria-label="Main Navigation"
         className="le-nav"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -4967,6 +4969,8 @@ export default function App() {
       <AnimatePresence initial={false} mode="sync">
         <motion.div
           key={`${page}-${viewReportId || "root"}`}
+          role="main"
+          aria-live="polite"
           className="le-page-stage"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}

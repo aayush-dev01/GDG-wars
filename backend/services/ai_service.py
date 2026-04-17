@@ -17,6 +17,7 @@ import json
 import asyncio
 import httpx
 import logging
+import hashlib
 from typing import List, Dict
 from dotenv import load_dotenv
 
@@ -158,6 +159,8 @@ def _fallback_response(idea: str, location: str) -> dict:
         ],
     }
 
+# ── Global Cache ──────────────────────────────────────────────────────────────
+_ai_cache = {}  # prompt_hash -> parsed_json
 
 # ── Main AI enrichment call ───────────────────────────────────────────────────
 
@@ -252,6 +255,12 @@ async def enrich_with_ai(
         "- Never use apostrophes inside JSON string values; rephrase instead"
     )
 
+    # ── Check Cache ──
+    prompt_hash = hashlib.md5(prompt.encode("utf-8")).hexdigest()
+    if prompt_hash in _ai_cache:
+        logger.info(f"AI response cache hit for hash {prompt_hash}")
+        return _ai_cache[prompt_hash]
+
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
@@ -319,7 +328,10 @@ async def enrich_with_ai(
 
     # Parse with repair fallback
     try:
-        return _safe_parse(raw)
+        parsed = _safe_parse(raw)
+        # ── Update Cache ──
+        _ai_cache[prompt_hash] = parsed
+        return parsed
     except ValueError as exc:
         logger.error(f"JSON parse error: {exc}")
         return _fallback_response(idea, location)

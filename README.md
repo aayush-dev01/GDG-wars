@@ -108,11 +108,43 @@ It is **guidance**, not a law firm. It helps you see **what may matter**, **wher
 
 ---
 
+---
+
+## Google Cloud & AI Integration
+
+LegalEase is built to leverage the **Google Ecosystem** for scale, intelligence, and security:
+
+- **Gemini 1.5 Pro**: Powers the deep legal enrichment, identifying complex regulatory patterns that a standard rule engine might miss.
+- **Google Cloud Run**: Provides a serverless, auto-scaling backend that handles bursts of legal analysis requests efficiently.
+- **Google Cloud Storage (GCS)**: (Integrated) Used for secure, persistent storage of generated PDF reports and user-uploaded verification documents.
+- **Google Secret Manager**: Ensures sensitive API keys and database credentials are never exposed in the codebase.
+- **Google Workspace (Potential)**: Export flows are designed to be compatible with Google Drive and Sheets for seamless founder collaboration.
+
+---
+
+## Testing & Quality Assurance
+
+We maintain high code quality through rigorous automated testing:
+
+- **Unit Tests**: Full coverage for the core Rule Engine and Risk Assessment logic.
+- **Integration Tests**: End-to-end validation of the `/api/analyze` flow.
+- **CI/CD**: GitHub Actions automatically run the test suite on every push to ensure zero regressions.
+
+---
+
+## GDG Wars: Problem Alignment
+
+LegalEase addresses the core mission of **empowering Indian entrepreneurs through technology**:
+
+1. **Democratizing Legal Knowledge**: Bridging the gap between a "business idea" and "legal readiness" using Generative AI.
+2. **Efficiency at Scale**: Replacing weeks of manual legal research with a 60-second AI-driven roadmap.
+3. **Compliance by Design**: Helping founders avoid heavy penalties and legal debt from Day 1, fostering a healthier startup ecosystem in India.
+
+---
+
 ## Technology
 
-**Frontend:** React and Vite, **DM Sans** and **Cormorant Garamond** typography — the same calm, editorial pairing as the interface. **Backend:** FastAPI and Python, **SQLite** for data. **AI** enriches reports and supports document workflows; **ReportLab** and **Excel** generation match the export experience in the app.
-
-<p align="center"><sub>Python Rule Engine · Gemini AI · ReportLab PDF · SQLite</sub></p>
+**Frontend:** React and Vite, **DM Sans** and **Cormorant Garamond** typography. **Backend:** FastAPI (Python), **SQLite** (local) / **Cloud SQL** (production). **AI:** Gemini 1.5 Pro via Vertex AI / Google AI SDK. **Storage:** Local / **Google Cloud Storage**.
 
 ---
 
