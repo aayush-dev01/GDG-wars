@@ -8,6 +8,7 @@ import logging
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 BASE_DIR = os.path.dirname(__file__)
@@ -71,6 +72,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Efficiency: Gzip Compression ─────────────────────────────────────────────
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# ── Security: Extra Security Headers ─────────────────────────────────────────
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://generativelanguage.googleapis.com https://fonts.googleapis.com https://fonts.gstatic.com data:;"
+    return response
 
 app.include_router(analyze.router, prefix="/api")
 app.include_router(report.router, prefix="/api")
