@@ -61,6 +61,7 @@ vercel.json
 backend/railway.toml
 backend/Procfile
 cloud-deploy.sh
+cloud-deploy.ps1
 START_COMMANDS.txt
 *.cmd
 start.sh
