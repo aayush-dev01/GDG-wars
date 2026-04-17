@@ -18,9 +18,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest httpx fastapi python-dotenv reportlab openpyxl
+        pip install pytest httpx
         if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
     - name: Test with pytest
       run: |
-        export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
-        pytest backend/tests
+        cd backend
+        python -m pytest tests
