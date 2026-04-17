@@ -4,7 +4,7 @@ FastAPI Backend Entry Point
 """
 
 import os
-
+import logging
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +14,8 @@ BASE_DIR = os.path.dirname(__file__)
 
 # Load .env before anything else.
 load_dotenv(os.path.join(BASE_DIR, ".env"))
+
+logger = logging.getLogger(__name__)
 
 from routers import analyze, report
 
@@ -28,8 +30,8 @@ DOCUMENT_UPLOADS_DIR = os.getenv(
 
 gemini_api_key = os.getenv("GEMINI_API_KEY", "").strip()
 if not gemini_api_key or gemini_api_key == "YOUR_GEMINI_API_KEY_HERE":
-    print(
-        "[main] GEMINI_API_KEY is missing. /api/analyze will fall back to "
+    logger.warning(
+        "GEMINI_API_KEY is missing. /api/analyze will fall back to "
         "deterministic content, but the backend will continue to start."
     )
 

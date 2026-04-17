@@ -16,8 +16,11 @@ import re
 import json
 import asyncio
 import httpx
+import logging
 from typing import List, Dict
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 GEMINI_URL = (
@@ -179,7 +182,7 @@ async def enrich_with_ai(
     gemini_api_key = get_gemini_api_key()
 
     if not gemini_api_key or gemini_api_key in ("YOUR_GEMINI_API_KEY_HERE", ""):
-        print("[ai_service] GEMINI_API_KEY is missing. Using deterministic fallback.")
+        logger.warning("GEMINI_API_KEY is missing. Using deterministic fallback.")
         return _fallback_response(idea, location)
 
     license_names = [lic["name"] for lic in licenses]
@@ -269,22 +272,22 @@ async def enrich_with_ai(
                 )
                 if resp.status_code != 429:
                     break
-                print(
-                    f"[ai_service] Gemini API returned 429 on attempt {attempt}. "
+                logger.warning(
+                    f"Gemini API returned 429 on attempt {attempt}. "
                     f"Retrying in {delay}s."
                 )
                 await asyncio.sleep(delay)
 
             if resp is not None and resp.status_code == 429:
-                print("[ai_service] Gemini quota exhausted after retries. Using deterministic fallback.")
+                logger.error("Gemini quota exhausted after retries. Using deterministic fallback.")
                 return _fallback_response(idea, location)
     except Exception as exc:
-        print(f"[ai_service] Request to Gemini failed: {exc}")
+        logger.exception(f"Request to Gemini failed: {exc}")
         return _fallback_response(idea, location)
 
     if resp.status_code != 200:
-        print(
-            f"[ai_service] Gemini API returned {resp.status_code}. "
+        logger.error(
+            f"Gemini API returned {resp.status_code}. "
             f"Using fallback. Response snippet: {resp.text[:300]}"
         )
         return _fallback_response(idea, location)
@@ -292,15 +295,15 @@ async def enrich_with_ai(
     try:
         data = resp.json()
     except ValueError as exc:
-        print(f"[ai_service] Gemini returned invalid JSON envelope: {exc}")
+        logger.error(f"Gemini returned invalid JSON envelope: {exc}")
         return _fallback_response(idea, location)
 
     if "error" in data:
         if str(data["error"].get("code")) == "429":
-            print("[ai_service] Gemini returned quota error payload. Using deterministic fallback.")
+            logger.error("Gemini returned quota error payload. Using deterministic fallback.")
             return _fallback_response(idea, location)
-        print(
-            "[ai_service] Gemini returned an error payload. "
+        logger.error(
+            "Gemini returned an error payload. "
             f"Using fallback. Message: {data['error'].get('message', 'Unknown error')}"
         )
         return _fallback_response(idea, location)
@@ -309,14 +312,14 @@ async def enrich_with_ai(
     try:
         raw = data["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError) as exc:
-        print(f"[ai_service] Unexpected Gemini response shape: {data}")
+        logger.error(f"Unexpected Gemini response shape: {data}")
         return _fallback_response(idea, location)
 
-    print(f"[ai_service] Raw Gemini response ({len(raw)} chars):\n{raw[:300]}...")
+    logger.info(f"Raw Gemini response ({len(raw)} chars):\n{raw[:300]}...")
 
     # Parse with repair fallback
     try:
         return _safe_parse(raw)
     except ValueError as exc:
-        print(f"[ai_service] JSON parse error: {exc}")
+        logger.error(f"JSON parse error: {exc}")
         return _fallback_response(idea, location)

@@ -9,6 +9,7 @@ import os
 import smtplib
 import ssl
 import base64
+import logging
 from datetime import datetime
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -20,6 +21,9 @@ from dotenv import load_dotenv
 
 ENV_PATH = os.path.join(os.path.dirname(__file__), "..", ".env")
 load_dotenv(ENV_PATH, override=True)
+
+logger = logging.getLogger(__name__)
+
 SMTP_TIMEOUT_SECONDS = 20
 
 
@@ -56,7 +60,7 @@ def _send_via_resend(
 
     resend_from = config["resend_from_email"] or config["from_addr"]
     if not resend_from:
-        print("[email_service] RESEND_FROM_EMAIL / EMAIL_FROM_ADDR not configured - skipping Resend send")
+        logger.warning("RESEND_FROM_EMAIL / EMAIL_FROM_ADDR not configured - skipping Resend send")
         return False
 
     with open(pdf_path, "rb") as f:
@@ -88,12 +92,12 @@ def _send_via_resend(
                 json=payload,
             )
         if response.is_success:
-            print(f"[email_service] Resend email sent to {to_email} for report {report_id}")
+            logger.info(f"Resend email sent to {to_email} for report {report_id}")
             return True
-        print(f"[email_service] Resend send failed: status={response.status_code} body={response.text}")
+        logger.error(f"Resend send failed: status={response.status_code} body={response.text}")
         return False
     except Exception as e:
-        print(f"[email_service] Resend exception: {e}")
+        logger.exception(f"Resend exception: {e}")
         return False
 
 
@@ -109,20 +113,20 @@ def send_report_email(
     Silently skips if EMAIL_ENABLED=false or SMTP not configured.
     """
     config = _get_email_config()
-    print(
-        f"[email_service] Attempting email send: enabled={config['email_enabled']} "
+    logger.info(
+        f"Attempting email send: enabled={config['email_enabled']} "
         f"host={config['smtp_host']} port={config['smtp_port']} "
         f"from={config['from_addr']} to={to_email} report={report_id}"
     )
 
     if not config["email_enabled"]:
-        print("[email_service] EMAIL_ENABLED is false - skipping email")
+        logger.info("EMAIL_ENABLED is false - skipping email")
         return False
     if not config["smtp_user"] or not config["smtp_pass"]:
-        print("[email_service] SMTP credentials not configured - skipping email")
+        logger.warning("SMTP credentials not configured - skipping email")
         return False
     if not os.path.exists(pdf_path):
-        print(f"[email_service] PDF not found at {pdf_path} - skipping email")
+        logger.error(f"PDF not found at {pdf_path} - skipping email")
         return False
 
     report_url = f'{config["frontend_url"]}/report/{report_id}'
@@ -202,10 +206,10 @@ def send_report_email(
     )
 
     if config["resend_api_key"]:
-        print("[email_service] Trying HTTPS email delivery via Resend")
+        logger.info("Trying HTTPS email delivery via Resend")
         if _send_via_resend(config, to_email, report_id, business_name, pdf_path, html, plain_text):
             return True
-        print("[email_service] Falling back to SMTP after Resend failure")
+        logger.warning("Falling back to SMTP after Resend failure")
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
@@ -244,11 +248,11 @@ def send_report_email(
                 server.ehlo()
                 server.login(config["smtp_user"], config["smtp_pass"])
                 server.sendmail(config["from_addr"], to_email, msg.as_string())
-        print(
-            f'[email_service] Report email sent from {config["from_addr"]} '
+        logger.info(
+            f'Report email sent from {config["from_addr"]} '
             f'to {to_email} for report {report_id}'
         )
         return True
     except Exception as e:
-        print(f"[email_service] Failed to send email: {e}")
+        logger.exception(f"Failed to send email: {e}")
         return False

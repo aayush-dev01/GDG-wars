@@ -3,7 +3,7 @@ LegalEase AI – /api/analyze Router
 Orchestrates: Rule Engine → Risk Engine → AI Enrichment → PDF → Storage → Email
 """
 
-import uuid, os, time
+import uuid, os, time, logging
 import threading
 from collections import defaultdict
 from fastapi import APIRouter, HTTPException, Request
@@ -16,6 +16,8 @@ from services.pdf_service import generate_pdf
 from services.storage_service import save_report
 from services.workspace_service import ensure_workspace_seeded
 from services.email_service import send_report_email
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -74,7 +76,7 @@ def _send_report_email_background(
     business_name: str,
     pdf_path: str,
 ):
-    print(f"[analyze] Background email send started for report {report_id} to {to_email}")
+    logger.info(f"Background email send started for report {report_id} to {to_email}")
     try:
         sent = send_report_email(
             to_email=to_email,
@@ -82,9 +84,9 @@ def _send_report_email_background(
             business_name=business_name,
             pdf_path=pdf_path,
         )
-        print(f"[analyze] Background email send finished for report {report_id}: sent={sent}")
+        logger.info(f"Background email send finished for report {report_id}: sent={sent}")
     except Exception as e:
-        print(f"Email background send warning: {e}")
+        logger.warning(f"Email background send warning: {e}")
 
 
 def score_label(score: int, type_: str) -> str:
@@ -197,7 +199,7 @@ async def analyze(req: AnalyzeRequest, request: Request):
     try:
         generate_pdf(full_data, pdf_path)
     except Exception as e:
-        print(f"PDF generation warning: {e}")
+        logger.warning(f"PDF generation warning: {e}")
         full_data["pdf_url"] = None
         pdf_path = None
 
@@ -216,14 +218,14 @@ async def analyze(req: AnalyzeRequest, request: Request):
     # ── Step 9: Send Email (non-fatal, optional) ──────────────────────────────
     if req.email and pdf_path:
         try:
-            print(f"[analyze] Queuing background email for report {report_id} to {req.email}")
+            logger.info(f"Queuing background email for report {report_id} to {req.email}")
             threading.Thread(
                 target=_send_report_email_background,
                 args=(req.email, report_id, full_data["business_name"], pdf_path),
                 daemon=True,
             ).start()
         except Exception as e:
-            print(f"Email queue warning: {e}")  # never block the response
+            logger.warning(f"Email queue warning: {e}")  # never block the response
 
     # ── Step 10: Build Response ───────────────────────────────────────────────
     return AnalyzeResponse(
