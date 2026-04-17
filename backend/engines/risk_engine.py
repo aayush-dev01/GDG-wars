@@ -182,7 +182,7 @@ def calculate_risk_score(
     base += MODE_DELTA.get(mode, 0)
 
     # License count penalty
-    critical_licenses = sum(1 for l in licenses if l["priority"] == "critical")
+    critical_licenses = sum(1 for l in licenses if l.get("priority") == "critical")
     base += critical_licenses * 3
 
     # High-risk keyword scan

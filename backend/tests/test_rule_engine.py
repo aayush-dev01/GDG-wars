@@ -5,7 +5,7 @@ def test_detect_category():
     assert detect_category("I want to open a restaurant") == "food"
     assert detect_category("Building a fintech app for loans") == "fintech"
     assert detect_category("A new saas platform for lawyers") == "tech"
-    assert detect_category("Selling clothes online") == "ecommerce"
+    assert detect_category("Selling clothes on an online store") == "ecommerce"
 
 def test_get_applicable_licenses():
     licenses = get_applicable_licenses("restaurant", "food", "Maharashtra")

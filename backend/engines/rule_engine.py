@@ -283,7 +283,7 @@ STATE_EXTRA_RULES: Dict[str, List[str]] = {
 CATEGORY_KEYWORDS: Dict[str, List[str]] = {
     "food":          ["food", "restaurant", "cafe", "kitchen", "tiffin", "catering", "bakery", "dairy", "snack", "meal", "cook", "dining", "hotel", "canteen", "sweet", "juice", "beverage", "cloud kitchen"],
     "fintech":       ["fintech", "loan", "lending", "payment", "neobank", "credit", "nbfc", "wallet", "upi", "insurance", "invest", "wealth", "trading"],
-    "ecommerce":     ["ecommerce", "e-commerce", "online store", "marketplace", "dropship", "amazon", "flipkart", "meesho", "shopify"],
+    "ecommerce":     ["ecommerce", "e-commerce", "online store", "marketplace", "dropship", "amazon", "flipkart", "meesho", "shopify", "online"],
     "healthcare":    ["hospital", "clinic", "doctor", "medical", "health", "diagnostic", "lab", "pharmacy", "dental", "ayurveda", "wellness"],
     "education":     ["school", "college", "edtech", "coaching", "tutor", "training", "academy", "learning", "upsc", "jee", "neet"],
     "manufacturing": ["factory", "manufacturing", "production", "garment", "textile", "assembly", "plant", "unit"],
@@ -404,6 +404,7 @@ def calculate_compliance_complexity(licenses: List[dict], category: str) -> int:
         base += 15
     elif category in ["food", "hospitality"]:
         base += 10
-    critical_count = sum(1 for l in licenses if l["priority"] == "critical")
-    base += critical_count * 5
+    # Number of critical licenses
+    critical_licenses = sum(1 for l in licenses if l.get("priority") == "critical")
+    base += critical_licenses * 5
     return min(base, 100)
