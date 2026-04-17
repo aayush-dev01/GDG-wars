@@ -1,0 +1,10 @@
+.gcloudignore
+.git
+.gitignore
+venv/
+.venv/
+.venv_clean/
+__pycache__/
+*.db
+generated_reports/
+uploaded_documents/

@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.venv_clean/
+.env
+*.db
+generated_reports/
+uploaded_documents/
+.git/
+.gitignore
